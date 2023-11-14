@@ -1,18 +1,34 @@
-from mysql_connector import mysql_connection
-
-
 def get_all_products(connection):
     cursor = connection.cursor()
-    sql = "SELECT * FROM products"
+    sql = "SELECT * FROM products where is_deleted = 0"
     cursor.execute(sql)
-    return cursor.fetchall()
+    response = []
+    for (id, name, unit_price, quantity_id, created_at, updated_at, deleted_at, is_deleted) in cursor:
+        response.append({
+            'id': id,
+            'name': name,
+            'unit_price': unit_price,
+            'quantity_id': quantity_id
+        })
+    return response
 
 
 def get_product(connection, product_id):
     cursor = connection.cursor()
-    sql = "SELECT * FROM products WHERE id = %s"
+    sql = "SELECT products.id, products.name, products.unit_price, products.quantity_id, products.created_at, products.updated_at, products.deleted_at, products.is_deleted, quantity.name FROM products inner join quantity on products.quantity_id = quantity.id WHERE products.id = %s"
     cursor.execute(sql, (product_id,))
-    return cursor.fetchone()
+    response = []
+    for (id, p_name, unit_price, quantity_id, created_at, updated_at, deleted_at, is_deleted, q_name) in cursor:
+        response.append({
+            'id': id,
+            'name': p_name,
+            'unit_price': unit_price,
+            'quantity_id': quantity_id,
+            'quantity_name': q_name
+        }
+        )
+    print(response)
+    return response
 
 
 def add_product(connection, product):
@@ -31,14 +47,9 @@ def update_product(connection, product):
     return cursor.rowcount
 
 
-def soft_delete_product(connection, product):
+def soft_delete_product(connection, product_id):
     cursor = connection.cursor()
     sql = "UPDATE products SET is_deleted = 1, deleted_at = NOW() WHERE id = %s"
-    cursor.execute(sql, (product['id'],))
+    cursor.execute(sql, (product_id,))
     connection.commit()
     return cursor.rowcount
-
-
-if __name__ == '__main__':
-    connection_obj = mysql_connection()
-    print(get_all_products(connection_obj))
