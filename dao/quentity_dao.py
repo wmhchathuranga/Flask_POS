@@ -1,4 +1,3 @@
-# need a crud for quantity table
 def get_quantity(connection, quantity_id):
     cursor = connection.cursor()
     sql = "SELECT * FROM quantity WHERE id = %s"

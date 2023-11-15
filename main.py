@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, request
-
-from mysql_connector import mysql_connection
-from products_dao import get_all_products, add_product, get_product, update_product, soft_delete_product
-from quentity_dao import get_all_quantities, get_quantity, add_quantity, update_quantity, soft_delete_quantity
+from db_connector.mysql_connector import mysql_connection
+from dao.products_dao import *
+from dao.quentity_dao import *
+from dao.order_dao import *
+from dao.cashier_dao import *
 
 app = Flask(__name__)
 connection = mysql_connection()
@@ -97,6 +98,72 @@ def delete_quantity_route(quantity_id):
         return jsonify({'message': 'Quantity deleted successfully'}), 200
     else:
         return jsonify({'message': 'Quantity not found'}), 404
+
+
+@app.route('/api/orders', methods=['GET'])
+def get_all_orders_route():
+    orders = get_all_orders(connection)
+    return jsonify(orders), 200
+
+
+@app.route('/api/order/<int:order_id>', methods=['GET'])
+def get_order_route(order_id):
+    order = get_order(connection, order_id)
+    if order:
+        return jsonify(order), 200
+    else:
+        return jsonify({'message': 'Order not found'}), 404
+
+
+@app.route('/api/order', methods=['POST'])
+def create_order_route():
+    order = request.json
+    order_id = create_order(connection, order)
+    return jsonify({'order_id': order_id}), 201
+
+
+@app.route('/api/cashier', methods=['POST'])
+def create_cashier_route():
+    cashier = request.json
+    cashier_id = create_cashier(connection, cashier)
+    return jsonify({'cashier_id': cashier_id}), 201
+
+
+@app.route('/api/cashiers', methods=['GET'])
+def get_all_cashiers_route():
+    cashiers = get_all_cashiers(connection)
+    return jsonify(cashiers), 200
+
+
+@app.route('/api/cashier/<int:cashier_id>', methods=['GET'])
+def get_cashier_route(cashier_id):
+    cashier = get_cashier(connection, cashier_id)
+    if cashier:
+        return jsonify(cashier), 200
+    else:
+        return jsonify({'message': 'Cashier not found'}), 404
+
+
+@app.route('/api/cashier/<int:cashier_id>', methods=['PUT'])
+def update_cashier_route(cashier_id):
+    cashier = request.json
+    row_count = update_cashier(connection, cashier)
+    if row_count > 0:
+        return jsonify({'message': 'Cashier updated successfully'}), 200
+    else:
+        return jsonify({'message': 'Cashier not found'}), 404
+
+
+@app.route('/api/cashier/<int:cashier_id>', methods=['PUT'])
+def delete_cashier_route(cashier_id):
+    cashier = get_cashier(connection, cashier_id)
+    if not cashier:
+        return jsonify({'message': 'Cashier not found'}), 404
+    row_count = soft_delete_cashier(connection, cashier_id)
+    if row_count > 0:
+        return jsonify({'message': 'Cashier deleted successfully'}), 200
+    else:
+        return jsonify({'message': 'Cashier not found'}), 404
 
 
 if __name__ == '__main__':
