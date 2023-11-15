@@ -100,7 +100,7 @@ def delete_quantity_route(quantity_id):
         return jsonify({'message': 'Quantity not found'}), 404
 
 
-@app.route('/api/orders', methods=['GET'])
+@app.route('/api/all_orders', methods=['GET'])
 def get_all_orders_route():
     orders = get_all_orders(connection)
     return jsonify(orders), 200
@@ -115,21 +115,21 @@ def get_order_route(order_id):
         return jsonify({'message': 'Order not found'}), 404
 
 
-@app.route('/api/order', methods=['POST'])
+@app.route('/api/add_order', methods=['POST'])
 def create_order_route():
     order = request.json
     order_id = create_order(connection, order)
     return jsonify({'order_id': order_id}), 201
 
 
-@app.route('/api/cashier', methods=['POST'])
+@app.route('/api/add_cashier', methods=['POST'])
 def create_cashier_route():
     cashier = request.json
     cashier_id = create_cashier(connection, cashier)
     return jsonify({'cashier_id': cashier_id}), 201
 
 
-@app.route('/api/cashiers', methods=['GET'])
+@app.route('/api/all_cashiers', methods=['GET'])
 def get_all_cashiers_route():
     cashiers = get_all_cashiers(connection)
     return jsonify(cashiers), 200
@@ -144,8 +144,8 @@ def get_cashier_route(cashier_id):
         return jsonify({'message': 'Cashier not found'}), 404
 
 
-@app.route('/api/cashier/<int:cashier_id>', methods=['PUT'])
-def update_cashier_route(cashier_id):
+@app.route('/api/update_cashier', methods=['PUT'])
+def update_cashier_route():
     cashier = request.json
     row_count = update_cashier(connection, cashier)
     if row_count > 0:
@@ -154,7 +154,7 @@ def update_cashier_route(cashier_id):
         return jsonify({'message': 'Cashier not found'}), 404
 
 
-@app.route('/api/cashier/<int:cashier_id>', methods=['PUT'])
+@app.route('/api/delete_cashier/<int:cashier_id>', methods=['PUT'])
 def delete_cashier_route(cashier_id):
     cashier = get_cashier(connection, cashier_id)
     if not cashier:

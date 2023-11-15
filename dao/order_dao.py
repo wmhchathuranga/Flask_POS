@@ -1,14 +1,27 @@
+import json
+
+from flask import jsonify
+
+from dao.products_dao import get_product
+
+
 def create_order(connection, order):
     cursor = connection.cursor()
     sql = "INSERT INTO orders (items, cashier_id, total) VALUES (%s, %s, %s)"
-    items = []
+    items = {}
+    item_list = []
+    total = 0
     for item in order['items']:
-        items.append({
+        product = get_product(connection, item['product_id'])
+        total += product[0]['unit_price'] * item['quantity']
+        item_list.append({
             'product_id': item['product_id'],
-            'uint_price': item['unit_price'],
+            'unit_price': product[0]['unit_price'],
             'quantity': item['quantity']
         })
-    cursor.execute(sql, (items, order['cashier_id'], order['total']))
+    items['items'] = item_list
+    print(items)
+    cursor.execute(sql, (json.dumps(items), order['cashier_id'], total))
     connection.commit()
     return cursor.lastrowid
 
@@ -21,7 +34,7 @@ def get_order(connection, order_id):
     for (id, items, cashier_id, total, created_at) in cursor:
         response.append({
             'id': id,
-            'items': items,
+            'order_info': json.loads(items),
             'cashier_id': cashier_id,
             'total': total,
             'created_at': created_at
@@ -37,7 +50,7 @@ def get_all_orders(connection):
     for (id, items, cashier_id, total, created_at) in cursor:
         response.append({
             'id': id,
-            'items': items,
+            'order_info': json.loads(items),
             'cashier_id': cashier_id,
             'total': total,
             'created_at': created_at

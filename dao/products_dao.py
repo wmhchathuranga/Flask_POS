@@ -27,7 +27,6 @@ def get_product(connection, product_id):
             'quantity_name': q_name
         }
         )
-    print(response)
     return response
 
 
