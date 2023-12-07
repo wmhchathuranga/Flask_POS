@@ -3,15 +3,18 @@ import mysql.connector
 
 def get_all_products(connection):
     cursor = connection.cursor()
-    sql = "SELECT * FROM products where is_deleted = 0"
+    sql = ("SELECT products.id, products.name, products.unit_price, products.quantity_id, products.created_at, "
+           "products.updated_at, products.deleted_at, products.is_deleted, quantity.unit FROM products "
+           "inner join quantity on products.quantity_id = quantity.id where products.is_deleted = 0")
     cursor.execute(sql)
     response = []
-    for (id, name, unit_price, quantity_id, created_at, updated_at, deleted_at, is_deleted) in cursor:
+    for (id, name, unit_price, quantity_id, created_at, updated_at, deleted_at, is_deleted, q_unit) in cursor:
         response.append({
             'id': id,
             'name': name,
             'unit_price': unit_price,
-            'quantity_id': quantity_id
+            'quantity_id': quantity_id,
+            'quantity_unit': q_unit,
         })
     return response
 

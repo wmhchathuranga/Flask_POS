@@ -35,7 +35,8 @@ def get_all_cashiers(connection):
     sql = "SELECT * FROM cashier WHERE is_deleted = 0"
     cursor.execute(sql)
     response = []
-    for (id, name, nic, password, dob, profile_pic, address, created_at, deleted_at, updated_at, is_deleted) in cursor:
+    for (id, is_admin, name, nic, password, dob, profile_pic, address, created_at, deleted_at, updated_at, is_deleted,
+         ) in cursor:
         response.append({
             'id': id,
             'name': name,
@@ -52,7 +53,8 @@ def get_cashier(connection, cashier_id):
     sql = "SELECT * FROM cashier WHERE id = %s and is_deleted = 0"
     cursor.execute(sql, (cashier_id,))
     response = []
-    for (id, name, nic, dob, profile_pic, address, created_at, deleted_at, updated_at, is_deleted) in cursor:
+    for (id, is_admin, name, nic, password, dob, profile_pic, address, created_at, deleted_at, updated_at,
+         is_deleted) in cursor:
         response.append({
             'id': id,
             'name': name,

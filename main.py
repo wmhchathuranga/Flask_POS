@@ -17,6 +17,14 @@ CORS(app, origins="*", supports_credentials=True)
 connection = mysql_connection()
 
 
+def check_admin(current_user):
+    cursor = connection.cursor()
+    sql = "SELECT is_admin FROM cashier WHERE nic = %s and is_deleted = 0"
+    cursor.execute(sql, (current_user,))
+    is_admin = cursor.fetchone()[0]
+    return is_admin
+
+
 # login route
 @app.route('/login', methods=['POST'])
 def login():
@@ -64,7 +72,9 @@ def add_new_product():
 @jwt_required()
 def update_product_route():
     current_user = get_jwt_identity()
-    print(current_user)
+    is_admin = check_admin(current_user)
+    if not is_admin:
+        return jsonify({'message': 'Unauthorized'}), 401
     product = request.json
     row_count = update_product(connection, product)
     if row_count > 0:
@@ -76,7 +86,12 @@ def update_product_route():
 
 
 @app.route('/api/delete_product/<int:product_id>', methods=['PUT'])
+@jwt_required()
 def soft_delete_product_route(product_id):
+    current_user = get_jwt_identity()
+    is_admin = check_admin(current_user)
+    if not is_admin:
+        return jsonify({'message': 'Unauthorized'}), 401
     product = get_product(connection, product_id)
     if not product:
         return jsonify({'message': 'Product not found'}), 404
@@ -125,7 +140,12 @@ def update_quantity_route():
 
 
 @app.route('/api/delete_quantity/<int:quantity_id>', methods=['PUT'])
+@jwt_required()
 def delete_quantity_route(quantity_id):
+    current_user = get_jwt_identity()
+    is_admin = check_admin(current_user)
+    if not is_admin:
+        return jsonify({'message': 'Unauthorized'}), 401
     quantity = get_quantity(connection, quantity_id)
     if not quantity:
         return jsonify({'message': 'Quantity not found'}), 404
@@ -181,7 +201,12 @@ def get_cashier_route(cashier_id):
 
 
 @app.route('/api/update_cashier', methods=['PUT'])
+@jwt_required()
 def update_cashier_route():
+    current_user = get_jwt_identity()
+    is_admin = check_admin(current_user)
+    if not is_admin:
+        return jsonify({'message': 'Unauthorized'}), 401
     cashier = request
     row_count = update_cashier(connection, cashier)
     if row_count > 0:
@@ -193,7 +218,12 @@ def update_cashier_route():
 
 
 @app.route('/api/delete_cashier/<int:cashier_id>', methods=['PUT'])
+@jwt_required()
 def delete_cashier_route(cashier_id):
+    current_user = get_jwt_identity()
+    is_admin = check_admin(current_user)
+    if not is_admin:
+        return jsonify({'message': 'Unauthorized'}), 401
     cashier = get_cashier(connection, cashier_id)
     if not cashier:
         return jsonify({'message': 'Cashier not found'}), 404
@@ -205,7 +235,7 @@ def delete_cashier_route(cashier_id):
 
 
 # route to get images in uploads folder
-@app.route('/uploads/<path:filename>', methods=['GET'])
+@app.route('/api/uploads/<path:filename>', methods=['GET'])
 def get_uploaded_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
